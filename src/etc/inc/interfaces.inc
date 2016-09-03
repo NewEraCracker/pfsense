@@ -3119,7 +3119,7 @@ function kill_dhcp6client_process($interface) {
 	}
 
 	if (($pid = find_dhcp6c_process($interface)) != 0) {
-		mwexec("kill -9 {$pid}");
+		mwexec("/bin/kill -9 {$pid}");
 		sleep(1);
 	}
 }
