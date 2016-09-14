@@ -86,17 +86,21 @@ function add_colors($string)
 // Edits smartd.conf file, adds or removes email for failed disk reporting
 function update_email($email)
 {
-	// Did they pass an email?
-	if(!empty($email))
-	{
-		// Put it in the smartd.conf file
-		shell_exec("/usr/bin/sed -i old 's/^DEVICESCAN.*/DEVICESCAN -H -m " . escapeshellarg($email) . "/' /usr/local/etc/smartd.conf");
+	/* Bail if an e-mail address is invalid */
+	if (!empty($email) && (filter_var($email, FILTER_VALIDATE_EMAIL) === false)) {
+		return;
 	}
-	// Nope
-	else
-	{
+
+	if (!file_exists("/usr/local/etc/smartd.conf") && file_exists("/usr/local/etc/smartd.conf.sample")) {
+		copy("/usr/local/etc/smartd.conf.sample", "/usr/local/etc/smartd.conf");
+	}
+	// Did they pass an email?
+	if (!empty($email)) {
+		// Put it in the smartd.conf file
+		shell_exec("/usr/bin/sed -i .old " . escapeshellarg("s/^DEVICESCAN.*/DEVICESCAN -H -m {$email}/") . " /usr/local/etc/smartd.conf");
+	} else {
 		// Remove email flags in smartd.conf
-		shell_exec("/usr/bin/sed -i old 's/^DEVICESCAN.*/DEVICESCAN/' /usr/local/etc/smartd.conf");
+		shell_exec("/usr/bin/sed -i .old 's/^DEVICESCAN.*/DEVICESCAN/' /usr/local/etc/smartd.conf");
 	}
 }
 

@@ -52,16 +52,20 @@ if (isset($_REQUEST['isAjax'])) {
 		$netstat .= " -f inet";
 		echo "IPv4\n";
 	}
-	if (!isset($_REQUEST['resolve']))
+	if (!isset($_REQUEST['resolve'])) {
 		$netstat .= " -n";
+	}
 
-	if (!empty($_REQUEST['filter']))
-		$netstat .= " | /usr/bin/sed -e '1,3d; 5,\$ { /" . escapeshellarg(htmlspecialchars($_REQUEST['filter'])) . "/!d; };'";
-	else
+	if (!empty($_REQUEST['filter'])) {
+		$netstat .= " | /usr/bin/sed -e " . escapeshellarg("1,3d; 5,\$ { /" . htmlspecialchars($_REQUEST['filter']) . "/!d; };");
+	} else {
 		$netstat .= " | /usr/bin/sed -e '1,3d'";
+	}
 
-	if (is_numeric($_REQUEST['limit']) && $_REQUEST['limit'] > 0)
+	if (is_numeric($_REQUEST['limit']) && $_REQUEST['limit'] > 0) {
+		$_REQUEST['limit']++;  // Account for the header line
 		$netstat .= " | /usr/bin/head -n {$_REQUEST['limit']}";
+	}
 
 	echo htmlspecialchars_decode(shell_exec($netstat));
 
