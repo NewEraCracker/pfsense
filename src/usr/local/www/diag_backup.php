@@ -356,14 +356,12 @@ if ($_POST) {
 									unset($config['shaper']);
 									/* optional if list */
 									$ifdescrs = get_configured_interface_list(true, true);
-									/* remove special characters from interface descriptions */
 									if (is_array($ifdescrs)) {
+										/* remove special characters from interface descriptions */
 										foreach ($ifdescrs as $iface) {
 											$config['interfaces'][$iface]['descr'] = remove_bad_chars($config['interfaces'][$iface]['descr']);
 										}
-									}
-									/* check for interface names with an alias */
-									if (is_array($ifdescrs)) {
+										/* check for interface names with an alias */
 										foreach ($ifdescrs as $iface) {
 											if (is_alias($config['interfaces'][$iface]['descr'])) {
 												$origname = $config['interfaces'][$iface]['descr'];
@@ -376,25 +374,28 @@ if ($_POST) {
 									// in order to force the config upgrade code to
 									// run through with all steps that are required.
 									$config['system']['version'] = "1.0";
-									// Deal with descriptions longer than 63 characters
-									for ($i = 0; isset($config["filter"]["rule"][$i]); $i++) {
-										if (count($config['filter']['rule'][$i]['descr']) > 63) {
-											$config['filter']['rule'][$i]['descr'] = substr($config['filter']['rule'][$i]['descr'], 0, 63);
+									if (is_array($config['filter']['rule'])) {
+										// Deal with descriptions longer than 63 characters
+										for ($i = 0; isset($config["filter"]["rule"][$i]); $i++) {
+											if (count($config['filter']['rule'][$i]['descr']) > 63) {
+												$config['filter']['rule'][$i]['descr'] = substr($config['filter']['rule'][$i]['descr'], 0, 63);
+											}
 										}
-									}
-									// Move interface from ipsec to enc0
-									for ($i = 0; isset($config["filter"]["rule"][$i]); $i++) {
-										if ($config['filter']['rule'][$i]['interface'] == "ipsec") {
-											$config['filter']['rule'][$i]['interface'] = "enc0";
+										// Move interface from ipsec to enc0
+										for ($i = 0; isset($config["filter"]["rule"][$i]); $i++) {
+											if ($config['filter']['rule'][$i]['interface'] == "ipsec") {
+												$config['filter']['rule'][$i]['interface'] = "enc0";
+											}
 										}
-									}
-									// Convert icmp types
-									// http://www.openbsd.org/cgi-bin/man.cgi?query=icmp&sektion=4&arch=i386&apropos=0&manpath=OpenBSD+Current
-									$convert = array('echo' => 'echoreq', 'timest' => 'timereq', 'timestrep' => 'timerep');
-									foreach ($config["filter"]["rule"] as $ruleid => &$ruledata) {
-										if ($convert[$ruledata['icmptype']]) {
-											$ruledata['icmptype'] = $convert[$ruledata['icmptype']];
+										// Convert icmp types
+										// http://www.openbsd.org/cgi-bin/man.cgi?query=icmp&sektion=4&arch=i386&apropos=0&manpath=OpenBSD+Current
+										$convert = array('echo' => 'echoreq', 'timest' => 'timereq', 'timestrep' => 'timerep');
+										foreach ($config["filter"]["rule"] as $ruleid => &$ruledata) {
+											if (array_key_exists($ruledata['icmptype'], $convert)) {
+												$ruledata['icmptype'] = $convert[$ruledata['icmptype']];
+											}
 										}
+										unset($ruleid, $ruledata);
 									}
 									$config['diag']['ipv6nat'] = true;
 									write_config(gettext("Imported m0n0wall configuration"));
